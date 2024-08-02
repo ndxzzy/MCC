@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>王牌竞速模拟器</title>
+	<link rel="shortcut icon" href="pack_icon.png">
+    <link rel="bookmark" href="pack_icon.png">
+    <style>
+        @font-face {
+            font-family: 'Minecraft';
+            src: url('Minecraft.ttf') format('truetype');
+        }
+        body {
+            font-family: 'Minecraft', Arial, sans-serif;
+            background-color: #101820;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .simulator {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 1rem;
+            margin: 5px;
+            cursor: pointer;
+            background-color: #2E8B57;
+            border: none;
+            color: #fff;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #3CB371;
+        }
+        #controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <img src="title.png" alt="MCC LOGO">
+	<div class="simulator" id="simulator">王牌竞速模拟器</div>
+    <div id="controls">
+        <button onclick="startSimulation()">开始模拟</button>
+        <button onclick="pauseSimulation()" style="display:none;" id="pauseButton">暂停模拟</button>
+    </div>
+
+    <audio id="backgroundMusic" src="music_ar.ogg" loop></audio>
+    <audio id="goSound" src="go.ogg"></audio>
+    <audio id="launch1" src="launch1.ogg"></audio>
+    <audio id="launch2" src="launch2.ogg"></audio>
+    <audio id="launch3" src="launch3.ogg"></audio>
+    <audio id="jump1" src="jump1.ogg"></audio>
+    <audio id="jump2" src="jump2.ogg"></audio>
+    <audio id="jump3" src="jump3.ogg"></audio>
+    <audio id="speed1" src="speed1.ogg"></audio>
+    <audio id="speed2" src="speed2.ogg"></audio>
+    <audio id="speed3" src="speed3.ogg"></audio>
+    <audio id="checkpointPass" src="checkpoint_pass.ogg"></audio>
+
+    <script>
+        let isPaused = false;
+        let simulationInterval;
+        let checkpointInterval;
+        let hasStarted = false;
+        const backgroundMusic = document.getElementById('backgroundMusic');
+        const goSound = document.getElementById('goSound');
+        const launchSounds = [document.getElementById('launch1'), document.getElementById('launch2'), document.getElementById('launch3')];
+        const jumpSounds = [document.getElementById('jump1'), document.getElementById('jump2'), document.getElementById('jump3')];
+        const speedSounds = [document.getElementById('speed1'), document.getElementById('speed2'), document.getElementById('speed3')];
+        const checkpointSound = document.getElementById('checkpointPass');
+
+        function startSimulation() {
+            if (simulationInterval) clearInterval(simulationInterval);
+            if (checkpointInterval) clearInterval(checkpointInterval);
+
+            if (!hasStarted) {
+                goSound.play();
+                hasStarted = true;
+            }
+            backgroundMusic.play();
+
+            document.getElementById('pauseButton').style.display = 'inline';
+            document.querySelector('#controls button').style.display = 'none';
+
+            simulationInterval = setInterval(playRandomSound, getRandomInterval(2000, 5000));
+            checkpointInterval = setInterval(() => {
+                if (!isPaused) {
+                    checkpointSound.currentTime = 0;
+                    checkpointSound.play();
+                }
+            }, 20000);
+        }
+
+        function pauseSimulation() {
+            isPaused = !isPaused;
+            document.getElementById('pauseButton').textContent = isPaused ? '继续模拟' : '暂停模拟';
+            if (isPaused) {
+                backgroundMusic.pause();
+                clearInterval(simulationInterval);
+                clearInterval(checkpointInterval);
+            } else {
+                backgroundMusic.play();
+                simulationInterval = setInterval(playRandomSound, getRandomInterval(2000, 5000));
+                checkpointInterval = setInterval(() => {
+                    if (!isPaused) {
+                        checkpointSound.currentTime = 0;
+                        checkpointSound.play();
+                    }
+                }, 20000);
+            }
+        }
+
+        function playRandomSound() {
+            if (isPaused) return;
+
+            const allSounds = [...launchSounds, ...jumpSounds, ...speedSounds];
+            const randomSound = allSounds[Math.floor(Math.random() * allSounds.length)];
+            randomSound.currentTime = 0;
+            randomSound.play();
+        }
+
+        function getRandomInterval(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+    </script>
+</body>
+</html>

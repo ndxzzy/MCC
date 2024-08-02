@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>时之沙计时器</title>
+	<link rel="shortcut icon" href="pack_icon.png">
+    <link rel="bookmark" href="pack_icon.png">
+    <style>
+        @font-face {
+            font-family: 'Minecraft';
+            src: url('Minecraft.ttf') format('truetype');
+        }
+        body {
+            font-family: 'Minecraft', Arial, sans-serif;
+            background-color: #101820;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .title {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        .timer {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 1rem;
+            margin: 5px;
+            cursor: pointer;
+            background-color: #2E8B57;
+            border: none;
+            color: #fff;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #3CB371;
+        }
+        #controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        img {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <img src="title.png" alt="MCC LOGO">
+    <div class="title">时之沙计时器</div>
+    <div class="timer" id="timer">0:00</div>
+    <div id="controls">
+        <input type="number" id="timeInput" placeholder="设置倒计时（秒数）">
+        <button onclick="startTimer()">开始计时</button>
+    </div>
+    <button onclick="addTime()" style="display:none;" id="addTimeButton">增加10秒</button>
+    <button onclick="pauseTimer()" style="display:none;" id="pauseButton">暂停计时</button>
+
+    <audio id="backgroundMusic" src="music_sot.ogg" loop></audio>
+    <audio id="sound30sec" src="sandtimer_30sec.ogg"></audio>
+    <audio id="sound20sec" src="sandtimer_20sec.ogg"></audio>
+    <audio id="sound10sec" src="sandtimer_10sec.ogg"></audio>
+    <audio id="sandPlace1" src="sand_place1.ogg"></audio>
+    <audio id="sandPlace2" src="sand_place2.ogg"></audio>
+    <audio id="sandPlace3" src="sand_place3.ogg"></audio>
+
+    <script>
+        let countdown;
+        let timeLeft;
+        let isPaused = false;
+        const timerDisplay = document.getElementById('timer');
+        const backgroundMusic = document.getElementById('backgroundMusic');
+        const sound30sec = document.getElementById('sound30sec');
+        const sound20sec = document.getElementById('sound20sec');
+        const sound10sec = document.getElementById('sound10sec');
+        const sandPlaceSounds = [
+            document.getElementById('sandPlace1'),
+            document.getElementById('sandPlace2'),
+            document.getElementById('sandPlace3')
+        ];
+
+        function startTimer() {
+            clearInterval(countdown);
+            const inputTime = document.getElementById('timeInput').value;
+            if (isNaN(inputTime) || inputTime <= 0) return;
+            timeLeft = parseInt(inputTime);
+            updateTimerDisplay();
+            backgroundMusic.play();
+            document.getElementById('timeInput').style.display = 'none';
+            document.querySelector('#controls button').style.display = 'none';
+            document.getElementById('addTimeButton').style.display = 'inline';
+            document.getElementById('pauseButton').style.display = 'inline';
+            countdown = setInterval(updateTimer, 1000);
+        }
+
+        function updateTimer() {
+            if (isPaused) return;
+            timeLeft--;
+            if (timeLeft === 30) {
+                sound30sec.play();
+            } else if (timeLeft === 20) {
+                sound20sec.play();
+            } else if (timeLeft <= 10 && timeLeft > 0) {
+                sound10sec.currentTime = 0;
+                sound10sec.play();
+            } else if (timeLeft <= 0) {
+                clearInterval(countdown);
+                backgroundMusic.pause();
+                backgroundMusic.currentTime = 0;
+                resetTimer();
+            }
+            updateTimerDisplay();
+        }
+
+        function addTime() {
+            timeLeft += 10;
+            const randomSound = sandPlaceSounds[Math.floor(Math.random() * sandPlaceSounds.length)];
+            randomSound.currentTime = 0;
+            randomSound.play();
+            updateTimerDisplay();
+        }
+
+        function pauseTimer() {
+            isPaused = !isPaused;
+            document.getElementById('pauseButton').textContent = isPaused ? '继续计时' : '暂停计时';
+            if (isPaused) {
+                backgroundMusic.pause();
+            } else {
+                backgroundMusic.play();
+            }
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerDisplay.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+        }
+
+        function resetTimer() {
+            document.getElementById('timeInput').style.display = 'block';
+            document.querySelector('#controls button').style.display = 'inline';
+            document.getElementById('addTimeButton').style.display = 'none';
+            document.getElementById('pauseButton').style.display = 'none';
+            timerDisplay.textContent = '0:00';
+        }
+    </script>
+</body>
+</html>
