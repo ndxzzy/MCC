@@ -1,2 +1,2 @@
-# MMC
-MMC音乐模拟
+# MCC
+MCC音乐模拟
